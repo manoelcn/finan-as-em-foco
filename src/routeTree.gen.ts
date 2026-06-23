@@ -9,8 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TrilhaRouteImport } from './routes/trilha'
+import { Route as DiagnosticoRouteImport } from './routes/diagnostico'
 import { Route as IndexRouteImport } from './routes/index'
 
+const TrilhaRoute = TrilhaRouteImport.update({
+  id: '/trilha',
+  path: '/trilha',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiagnosticoRoute = DiagnosticoRouteImport.update({
+  id: '/diagnostico',
+  path: '/diagnostico',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +31,50 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/diagnostico': typeof DiagnosticoRoute
+  '/trilha': typeof TrilhaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/diagnostico': typeof DiagnosticoRoute
+  '/trilha': typeof TrilhaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/diagnostico': typeof DiagnosticoRoute
+  '/trilha': typeof TrilhaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/diagnostico' | '/trilha'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/diagnostico' | '/trilha'
+  id: '__root__' | '/' | '/diagnostico' | '/trilha'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DiagnosticoRoute: typeof DiagnosticoRoute
+  TrilhaRoute: typeof TrilhaRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/trilha': {
+      id: '/trilha'
+      path: '/trilha'
+      fullPath: '/trilha'
+      preLoaderRoute: typeof TrilhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/diagnostico': {
+      id: '/diagnostico'
+      path: '/diagnostico'
+      fullPath: '/diagnostico'
+      preLoaderRoute: typeof DiagnosticoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,6 +87,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DiagnosticoRoute: DiagnosticoRoute,
+  TrilhaRoute: TrilhaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
