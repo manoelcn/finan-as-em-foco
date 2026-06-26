@@ -54,3 +54,9 @@
   40% { transform: translateY(-4px); opacity: 1; }
 }
 .dot-bounce { animation: dot-bounce 1.2s infinite; }
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in { animation: fade-in 0.3s ease-out both; }

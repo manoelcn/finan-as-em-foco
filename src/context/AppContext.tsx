@@ -3,6 +3,11 @@ import { UNIDADES, type Unidade } from "@/data/unidades";
 
 type Etapa = "diagnostico" | "trilha";
 
+export interface MsgChat {
+  role: "user" | "assistant";
+  content: string;
+}
+
 interface AppCtx {
   unidades: Unidade[];
   alunoNome: string;
@@ -13,6 +18,10 @@ interface AppCtx {
   setProficiencia: (id: number, valor: number) => void;
   desbloquearDependentes: (idDominado: number) => void;
   resetar: () => void;
+  // Canal de comunicação: fila de mensagens da Prof. Fina para o ChatWidget
+  mensagensPendentes: MsgChat[];
+  empurrarMensagemChat: (m: MsgChat) => void;
+  consumirMensagensPendentes: () => void;
 }
 
 const Ctx = createContext<AppCtx | null>(null);
@@ -21,6 +30,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [unidades, setUnidades] = useState<Unidade[]>(() => UNIDADES.map((u) => ({ ...u })));
   const [alunoNome, setAlunoNome] = useState("");
   const [etapa, setEtapa] = useState<Etapa>("diagnostico");
+  const [mensagensPendentes, setMensagensPendentes] = useState<MsgChat[]>([]);
 
   const recomputarStatus = useCallback((arr: Unidade[]): Unidade[] => {
     return arr.map((u) => {
@@ -63,12 +73,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setUnidades(UNIDADES.map((u) => ({ ...u })));
     setAlunoNome("");
     setEtapa("diagnostico");
+    setMensagensPendentes([]);
+  }, []);
+
+  const empurrarMensagemChat = useCallback((m: MsgChat) => {
+    setMensagensPendentes((prev) => [...prev, m]);
+  }, []);
+
+  const consumirMensagensPendentes = useCallback(() => {
+    setMensagensPendentes([]);
   }, []);
 
   const value = useMemo<AppCtx>(() => ({
     unidades, alunoNome, setAlunoNome, etapa, setEtapa,
     atualizarProficiencia, setProficiencia, desbloquearDependentes, resetar,
-  }), [unidades, alunoNome, etapa, atualizarProficiencia, setProficiencia, desbloquearDependentes, resetar]);
+    mensagensPendentes, empurrarMensagemChat, consumirMensagensPendentes,
+  }), [unidades, alunoNome, etapa, atualizarProficiencia, setProficiencia, desbloquearDependentes, resetar, mensagensPendentes, empurrarMensagemChat, consumirMensagensPendentes]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

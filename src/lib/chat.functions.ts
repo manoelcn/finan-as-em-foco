@@ -19,6 +19,65 @@ const Schema = z.object({
   historico: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string() })).default([]),
 });
 
+const SchemaErro = z.object({
+  alunoNome: z.string().default(""),
+  nomeUC: z.string(),
+  pergunta: z.string(),
+  alternativaErrada: z.string(),
+  alternativaCorreta: z.string(),
+});
+
+export const explicarErroExercicio = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => SchemaErro.parse(d))
+  .handler(async ({ data }) => {
+    const key = process.env.LOVABLE_API_KEY;
+    if (!key) throw new Error("LOVABLE_API_KEY não configurada");
+    const gateway = createLovableAiGatewayProvider(key);
+    const prompt = `O aluno ${data.alunoNome || "estudante"} está estudando o módulo '${data.nomeUC}' e errou uma questão.
+
+Pergunta: ${data.pergunta}
+Alternativa que o aluno escolheu (ERRADA): ${data.alternativaErrada}
+Alternativa correta: ${data.alternativaCorreta}
+
+Em 2-3 frases curtas: explique por que a alternativa escolhida está errada e dê uma dica para o aluno raciocinar melhor, sem entregar a resposta diretamente. Seja encorajador e use linguagem simples para ensino médio. Responda em português.`;
+
+    const { text } = await generateText({
+      model: gateway("google/gemini-3-flash-preview"),
+      system: SYSTEM,
+      messages: [{ role: "user" as const, content: prompt }],
+      maxOutputTokens: 300,
+    });
+    return { reply: text };
+  });
+
+const SchemaConquista = z.object({
+  alunoNome: z.string().default(""),
+  nomeUC: z.string(),
+  proficiencia: z.number(),
+  estadoUnidades: z.string(), // ex: "UC1=dominado(95%), UC2=disponivel(30%), ..."
+});
+
+export const parabenizarConquista = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => SchemaConquista.parse(d))
+  .handler(async ({ data }) => {
+    const key = process.env.LOVABLE_API_KEY;
+    if (!key) throw new Error("LOVABLE_API_KEY não configurada");
+    const gateway = createLovableAiGatewayProvider(key);
+    const prompt = `O aluno ${data.alunoNome || "estudante"} acabou de dominar o módulo '${data.nomeUC}' (proficiência ${data.proficiencia}%).
+
+Estado atual de todas as unidades: ${data.estadoUnidades}
+
+Em 3-4 frases: parabenize o aluno de forma genuína e motivadora, mencione especificamente o que ele aprendeu neste módulo, e indique qual(is) módulo(s) estão agora disponíveis para ele estudar (se houver), explicando brevemente por que faz sentido estudá-los agora. Se não houver próximo módulo disponível ainda, incentive-o a continuar com os módulos em andamento. Responda em português, seja caloroso e use o nome do aluno.`;
+
+    const { text } = await generateText({
+      model: gateway("google/gemini-3-flash-preview"),
+      system: SYSTEM,
+      messages: [{ role: "user" as const, content: prompt }],
+      maxOutputTokens: 400,
+    });
+    return { reply: text };
+  });
+
 export const enviarMensagemTutora = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => Schema.parse(d))
   .handler(async ({ data }) => {

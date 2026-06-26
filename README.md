@@ -23,7 +23,7 @@ Principais recursos:
 - `@tanstack/react-router`
 - `@tanstack/react-query`
 - `@tanstack/react-start`
-- `@ai-sdk/openai-compatible`
+- `@google/generative-ai` (Gemini SDK)
 - `zod`
 - `sonner`
 
@@ -79,21 +79,17 @@ Principais recursos:
 - O chat de IA faz chamadas ao servidor usando `useServerFn` de `@tanstack/react-start`.
 - O estado do aluno e o progresso das unidades são gerenciados no contexto `AppContext`.
 
-## Configurar chave de API (LOVABLE_API_KEY)
+## Configurar chave de API (GEMINI_API_KEY)
 
-Para que o chat da tutora (IA) funcione localmente, é necessário configurar a chave de API fornecida pelo provedor Lovable. Siga estes passos:
+O chat da tutora (IA) agora é integrado diretamente com o **Google Gemini SDK** via Server Functions. Para que funcione localmente, é necessário configurar sua chave de API do Google Gemini. Siga estes passos:
 
-1. No diretório raiz do projeto, crie um arquivo `.env.local` com o conteúdo:
-
-```bash
-LOVABLE_API_KEY=su_a_chave_aqui
-```
-
-2. Proteja a chave do controle de versão adicionando `.env.local` ao `.gitignore` (se ainda não estiver):
+1. No diretório raiz do projeto, crie ou edite o arquivo `.env` com o conteúdo:
 
 ```bash
-echo ".env.local" >> .gitignore
+GEMINI_API_KEY=sua_chave_real_aqui
 ```
+
+2. O arquivo `.env` já está protegido no `.gitignore` para que sua chave não seja exposta no repositório.
 
 3. Reinicie o servidor de desenvolvimento:
 
@@ -101,12 +97,12 @@ echo ".env.local" >> .gitignore
 npm run dev
 ```
 
-4. Abra a aplicação e teste o chat. Se a chave não estiver configurada, o servidor lançará o erro "LOVABLE_API_KEY não configurada".
+4. Abra a aplicação e teste o chat. Se a chave não estiver configurada, o servidor lançará um erro.
 
-Notas:
-- O código que lê a chave está em `src/lib/chat.functions.ts` e a chave é passada ao gateway em `src/lib/ai-gateway.server.ts`.
-- Esse valor é necessário apenas no lado do servidor; não use o prefixo `VITE_` para essa variável.
-- Para produção, configure `LOVABLE_API_KEY` nas variáveis de ambiente do seu provedor (Vercel, Heroku, Docker, etc.).
+**Notas de Segurança da Arquitetura:**
+- O código que lê a chave está centralizado de forma segura em `src/lib/gemini.server.ts` rodando via Server Functions do TanStack Start.
+- **Aviso Importante:** Nunca utilize o prefixo `VITE_` (ex: `VITE_GEMINI_API_KEY`), pois isso exporia publicamente a sua chave secreta no bundle JavaScript do navegador. A aplicação acessa a chave de forma segura no lado do servidor através de `process.env.GEMINI_API_KEY`.
+- Para produção, configure a variável `GEMINI_API_KEY` no ambiente de deploy.
 
 ## Contato
 
