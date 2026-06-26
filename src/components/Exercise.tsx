@@ -34,13 +34,17 @@ export function Exercise({ unidade, onVoltar }: { unidade: Unidade; onVoltar: ()
         setTimeout(() => setToast(null), 3500);
       }
     } else {
-      atualizarProficiencia(unidade.id, -10);
-      setFeedback({ tipo: "erro", texto: "Tente novamente! -10 pontos" });
+        atualizarProficiencia(unidade.id, -10);
+        const reflexivo = q.feedbacks?.[i];
+        setFeedback({
+          tipo: "erro",
+          texto: reflexivo ?? "Tente novamente! −10 pontos",
+      });
       setTimeout(() => {
         setEscolha(null);
         setFeedback(null);
         setTentativa((t) => t + 1);
-      }, 1500);
+      }, 4000);
     }
   };
 

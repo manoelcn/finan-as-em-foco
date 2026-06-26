@@ -101,7 +101,7 @@ function Diagnostico() {
     setEscolha(i);
     const ok = i === q.correta;
     setResultados((r) => ({ ...r, [uc.id]: ok }));
-    if (ok) setProficiencia(uc.id, 100);
+    if (ok) setProficiencia(uc.id, 60);
   };
 
   return (
@@ -146,7 +146,7 @@ function Diagnostico() {
 
         {respondeu && (
           <div className={`mt-5 rounded-lg p-3 text-sm font-medium ${acertou ? "bg-emerald/15 text-emerald" : "bg-danger/15 text-danger"}`}>
-            {acertou ? "✓ Correto! Você já domina esse conteúdo." : "✗ Vamos estudar esse tema juntos."}
+            {acertou ? "✓ Boa! Você já tem uma base nesse tema — vamos confirmar na trilha." : "✗ Vamos estudar esse tema juntos."}
           </div>
         )}
 
