@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useApp } from "@/context/AppContext";
 import { DomainGraph } from "@/components/DomainGraph";
@@ -16,9 +16,14 @@ export const Route = createFileRoute("/trilha")({
 });
 
 function Trilha() {
-  const { unidades, alunoNome } = useApp();
+  const { unidades, alunoNome, etapa } = useApp();
   const [selId, setSelId] = useState<number | null>(null);
   const [modo, setModo] = useState<"conteudo" | "exercicio">("conteudo");
+  const [fechouModalFinal, setFechouModalFinal] = useState(false);
+
+  if (etapa === "diagnostico") {
+    return <Navigate to="/diagnostico" />;
+  }
 
   const sel = unidades.find((u) => u.id === selId) || null;
 
@@ -27,8 +32,32 @@ function Trilha() {
     setModo("conteudo");
   };
 
+  const todosDominados = unidades.length > 0 && unidades.every(u => u.status === "dominado");
+  const mostrarModalFinal = todosDominados && !fechouModalFinal;
+
   return (
     <main className="h-[calc(100vh-56px)] bg-bg p-3 md:p-4">
+      {mostrarModalFinal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-4">
+          <div className="max-w-md w-full bg-surface border border-border-soft rounded-2xl shadow-2xl p-8 text-center">
+            <div className="text-6xl mb-6">🎓</div>
+            <h2 className="font-display text-2xl font-bold text-ink mb-3">Parabéns! Trilha Concluída</h2>
+            <p className="text-ink-mute mb-8 leading-relaxed text-sm">
+              Você agora possui uma excelente base de matemática financeira! 
+              Você já tem conhecimento suficiente para se aprofundar em conteúdos mais complexos sobre o mundo das finanças.
+              <br /><br />
+              Lembre-se: a Prof. Fina estará sempre disponível no chat caso precise de ajuda ou queira tirar dúvidas sobre novos assuntos!
+            </p>
+            <button 
+              onClick={() => setFechouModalFinal(true)}
+              className="w-full bg-emerald hover:bg-emerald-600 text-bg font-bold py-3 px-4 rounded-xl transition outline-none focus-visible:ring-2 focus-visible:ring-emerald"
+            >
+              Continuar explorando
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="flex h-full flex-col gap-4 md:flex-row">
         
         {/* Esquerda: Interação */}
@@ -55,12 +84,28 @@ function Trilha() {
 
                 <p className="mt-6 leading-relaxed text-ink">{sel.descricao}</p>
 
-                <button
-                  onClick={() => setModo("exercicio")}
-                  className="mt-6 inline-flex items-center gap-2 rounded-lg bg-emerald px-5 py-3 font-semibold text-bg hover:bg-emerald-600"
-                >
-                  Praticar agora →
-                </button>
+                {sel.status === "disponivel" ? (
+                  <button
+                    onClick={() => setModo("exercicio")}
+                    className="mt-6 inline-flex items-center gap-2 rounded-lg bg-emerald px-5 py-3 font-semibold text-bg hover:bg-emerald-600 transition outline-none focus-visible:ring-2 focus-visible:ring-emerald"
+                  >
+                    Praticar agora →
+                  </button>
+                ) : sel.status === "dominado" ? (
+                  <button
+                    disabled
+                    className="mt-6 inline-flex items-center gap-2 rounded-lg bg-emerald/10 px-5 py-3 font-semibold text-emerald cursor-not-allowed border border-emerald/20"
+                  >
+                    ✓ Módulo Concluído
+                  </button>
+                ) : (
+                  <button
+                    disabled
+                    className="mt-6 inline-flex items-center gap-2 rounded-lg bg-surface px-5 py-3 font-semibold text-ink-mute cursor-not-allowed border border-border-soft"
+                  >
+                    🔒 Módulo Bloqueado
+                  </button>
+                )}
               </div>
             )}
 
