@@ -20,13 +20,13 @@ export const UNIDADES: Unidade[] = [
 ];
 
 export const POSICOES: Record<number, { x: number; y: number }> = {
-  1: { x: 150, y: 50 },
-  2: { x: 75, y: 150 },
-  3: { x: 225, y: 150 },
-  4: { x: 150, y: 250 },
-  5: { x: 75, y: 350 },
-  6: { x: 225, y: 350 },
-  7: { x: 150, y: 450 },
+  1: { x: 300, y: 50 },
+  2: { x: 150, y: 150 },
+  3: { x: 450, y: 150 },
+  4: { x: 300, y: 250 },
+  5: { x: 150, y: 350 },
+  6: { x: 450, y: 350 },
+  7: { x: 300, y: 450 },
 };
 
 export const ARESTAS: Array<[number, number]> = [

@@ -12,8 +12,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { AppProvider } from "@/context/AppContext";
-import { ChatWidget } from "@/components/ChatWidget";
+import { AppProvider, useApp } from "@/context/AppContext";
 
 function NotFoundComponent() {
   return (
@@ -79,10 +78,38 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
-function ChatMount() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  if (pathname === "/") return null;
-  return <ChatWidget />;
+function GlobalHeader() {
+  const { unidades, resetar } = useApp();
+  const progresso = Math.round(unidades.reduce((s, u) => s + u.proficiencia, 0) / unidades.length);
+  
+  return (
+    <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border-soft bg-surface px-4 shadow-sm">
+      <div className="flex items-center gap-3">
+        <span className="text-xl">📊</span>
+        <div>
+          <h1 className="font-display text-sm font-bold text-ink leading-tight">Finanças em Foco</h1>
+          <p className="text-[10px] text-ink-mute uppercase tracking-wider">Tutoria adaptativa com IA</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-4">
+        <div className="text-right">
+          <div className="text-[10px] uppercase tracking-wider text-ink-mute">Progresso global</div>
+          <div className="font-display text-sm font-bold text-emerald">{progresso}%</div>
+        </div>
+        <button 
+          onClick={() => {
+            if (confirm("Deseja realmente reiniciar todo o seu progresso?")) {
+              resetar();
+            }
+          }}
+          className="flex h-8 w-8 items-center justify-center rounded-md border border-border-soft text-ink-mute hover:bg-bg hover:text-ink transition-colors"
+          title="Reiniciar Progresso"
+        >
+          ⟳
+        </button>
+      </div>
+    </header>
+  );
 }
 
 function RootComponent() {
@@ -90,8 +117,8 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AppProvider>
+        <GlobalHeader />
         <Outlet />
-        <ChatMount />
       </AppProvider>
     </QueryClientProvider>
   );

@@ -119,26 +119,32 @@ export function Exercise({ unidade, onVoltar }: { unidade: Unidade; onVoltar: ()
       </div>
 
       <h2 className="mt-4 font-display text-2xl font-bold text-ink">Exercício — {unidade.titulo}</h2>
-      <p className="mt-4 text-ink">{q.pergunta}</p>
+      <p className="mt-4 font-display text-[22px] font-semibold text-ink leading-relaxed">{q.pergunta}</p>
 
-      <div className="mt-5 space-y-3">
+      <div className="mt-8 flex flex-col gap-[14px]">
         {q.alternativas.map((alt, i) => {
           const ans = escolha === i;
-          let cls = "border-border-soft hover:border-emerald text-ink";
-          if (ans && feedback?.tipo === "ok") cls = "border-emerald bg-emerald/20 text-ink";
-          else if (ans && feedback?.tipo === "erro") cls = "border-danger bg-danger/15 text-ink";
-          else if (respondeu && i === q.correta) cls = "border-emerald bg-emerald/10 text-ink";
+          let cls = "border-border-soft hover:border-emerald bg-surface";
+          let labelCls = "text-emerald";
+
+          if (ans && feedback?.tipo === "ok") { cls = "border-emerald bg-emerald/20"; }
+          else if (ans && feedback?.tipo === "erro") { cls = "border-danger bg-danger/15"; labelCls = "text-danger"; }
+          else if (respondeu && i === q.correta) { cls = "border-emerald bg-emerald/10"; }
+          else if (ans) { cls = "border-emerald bg-emerald/5"; }
+
           return (
             <button
               key={i}
               disabled={respondeu || feedback?.tipo === "erro"}
               onClick={() => responder(i)}
-              className={`flex w-full items-center gap-3 rounded-lg border-2 px-4 py-3 text-left transition ${cls}`}
+              className={`flex w-full items-center gap-4 rounded-lg border-2 px-[20px] py-[18px] text-left transition ${cls}`}
             >
-              <span className="font-display text-sm font-bold text-emerald">{String.fromCharCode(65 + i)}</span>
-              <span className="flex-1 text-sm">{alt}</span>
-              {ans && feedback?.tipo === "ok" && <span className="text-emerald">✓</span>}
-              {ans && feedback?.tipo === "erro" && <span className="text-danger">✗</span>}
+              <span className={`flex h-[36px] w-[36px] shrink-0 items-center justify-center rounded border border-border-soft bg-bg font-display text-[15px] font-bold shadow-sm ${labelCls}`}>
+                {String.fromCharCode(65 + i)}
+              </span>
+              <span className="flex-1 text-sm text-ink">{alt}</span>
+              {ans && feedback?.tipo === "ok" && <span className="text-emerald text-lg">✓</span>}
+              {ans && feedback?.tipo === "erro" && <span className="text-danger text-lg">✗</span>}
             </button>
           );
         })}
