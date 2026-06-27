@@ -9,7 +9,20 @@ import type { Unidade } from "@/data/unidades";
 export function Exercise({ unidade, onVoltar }: { unidade: Unidade; onVoltar: () => void }) {
   const { atualizarProficiencia, unidades, alunoNome, empurrarMensagemChat } = useApp();
   const banco = EXERCICIOS[unidade.id];
-  const [qIdx] = useState(() => Math.floor(Math.random() * banco.length));
+  const ucAtual = useMemo(() => unidades.find((u) => u.id === unidade.id)!, [unidades, unidade.id]);
+
+  const [filaIdx] = useState(() => {
+    const indices = banco.map((_, i) => i);
+    for (let i = indices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+    // Se o aluno já pontuou bem no diagnóstico (ex: >= 60%), ele responde menos perguntas
+    const maxQ = ucAtual.proficiencia >= 60 ? 1 : indices.length;
+    return indices.slice(0, maxQ);
+  });
+  const [progressoFila, setProgressoFila] = useState(0);
+  const qIdx = filaIdx[progressoFila];
   const q = banco[qIdx];
 
   const [tentativa, setTentativa] = useState(1);
@@ -27,7 +40,7 @@ export function Exercise({ unidade, onVoltar }: { unidade: Unidade; onVoltar: ()
 
   const respondeu = escolha !== null && feedback?.tipo === "ok";
 
-  const ucAtual = useMemo(() => unidades.find((u) => u.id === unidade.id)!, [unidades, unidade.id]);
+
 
   const responder = (i: number) => {
     if (respondeu) return;
@@ -37,12 +50,18 @@ export function Exercise({ unidade, onVoltar }: { unidade: Unidade; onVoltar: ()
     setEscolha(i);
 
     if (i === q.correta) {
-      const delta = pediuDica ? 15 : tentativa === 1 ? 25 : 15;
+      const deltaNormal = pediuDica ? 15 : tentativa === 1 ? 35 : 15;
+      const isUltima = progressoFila + 1 === filaIdx.length;
       const antes = ucAtual.proficiencia;
-      atualizarProficiencia(unidade.id, delta);
-      setFeedback({ tipo: "ok", texto: `🎉 Correto! +${delta} pontos` });
+      
+      let novo = Math.min(100, antes + deltaNormal);
+      if (isUltima) novo = 100;
+      
+      const deltaReal = novo - antes;
+      
+      atualizarProficiencia(unidade.id, deltaReal);
+      setFeedback({ tipo: "ok", texto: `🎉 Correto!${deltaReal > 0 ? ` +${deltaReal} pontos` : ""}` });
 
-      const novo = Math.min(100, antes + delta);
       if (antes < 80 && novo >= 80) {
         // Show local toast
         setToast("🏆 Módulo Dominado! Novos módulos desbloqueados.");
@@ -79,21 +98,8 @@ export function Exercise({ unidade, onVoltar }: { unidade: Unidade; onVoltar: ()
         texto: reflexivo ?? "Tente novamente! −10 pontos",
       });
 
-      // Fire AI feedback call with full exercise context (non-blocking)
-      setLoadingIA(true);
-      const msgComContexto = montarContexto(alunoNome, unidades, unidade.titulo, {
-        pergunta: q.pergunta,
-        respostaAluno: q.alternativas[i],
-        respostaCorreta: q.alternativas[q.correta],
-        resultado: "erro",
-        tentativas: tentativa,
-        usouDica: pediuDica,
-      }) + "Acabei de errar essa questão. Me ajuda a entender onde errei?";
-
-      enviarMsgServidor({ data: { historico: [], novaMensagem: msgComContexto } })
-        .then((resposta) => setFeedbackIA(resposta))
-        .catch(() => setFeedbackIA("Não consegui buscar uma explicação agora. Continue tentando! 💪"))
-        .finally(() => setLoadingIA(false));
+      // Set static hint in the AI tutor card instead of making an API call
+      setFeedbackIA(reflexivo ?? "Tente novamente! −10 pontos");
 
       // Reset visual state after 4s so the student can try again
       setTimeout(() => {
@@ -114,8 +120,13 @@ export function Exercise({ unidade, onVoltar }: { unidade: Unidade; onVoltar: ()
       )}
 
       <div className="flex items-center justify-between">
-        <button onClick={onVoltar} className="text-sm text-ink-mute hover:text-ink">← Voltar ao conteúdo</button>
-        <span className="rounded-full bg-bg px-3 py-1 text-xs font-medium text-ink-mute">Tentativa {tentativa}</span>
+        <button onClick={onVoltar} className="text-sm text-ink-mute hover:text-ink transition">← Voltar ao conteúdo</button>
+        <div className="flex gap-2">
+          <span className="rounded-full bg-bg px-3 py-1 text-xs font-medium text-ink-mute">
+            Questão {progressoFila + 1} de {filaIdx.length}
+          </span>
+          <span className="rounded-full bg-bg px-3 py-1 text-xs font-medium text-ink-mute">Tentativa {tentativa}</span>
+        </div>
       </div>
 
       <h2 className="mt-4 font-display text-2xl font-bold text-ink">Exercício — {unidade.titulo}</h2>
@@ -150,8 +161,8 @@ export function Exercise({ unidade, onVoltar }: { unidade: Unidade; onVoltar: ()
         })}
       </div>
 
-      {feedback && (
-        <div className={`mt-4 rounded-lg p-3 text-sm font-medium ${feedback.tipo === "ok" ? "bg-emerald/15 text-emerald" : "bg-danger/15 text-danger"}`}>
+      {feedback?.tipo === "ok" && (
+        <div className="mt-4 rounded-lg bg-emerald/15 p-3 text-sm font-medium text-emerald">
           {feedback.texto}
         </div>
       )}
@@ -200,23 +211,50 @@ export function Exercise({ unidade, onVoltar }: { unidade: Unidade; onVoltar: ()
         </div>
       )}
 
-      {!respondeu && !mostrarDica && q.dica && (
+      {!respondeu && (
         <button
-          onClick={() => { setMostrarDica(true); setPediuDica(true); }}
-          className="mt-4 rounded-lg border border-amber/50 bg-amber/10 px-4 py-2 text-sm font-medium text-amber hover:bg-amber/20"
+          disabled={pediuDica}
+          onClick={() => {
+            setPediuDica(true);
+            
+            // Push user message to chat so they see they asked for a hint
+            empurrarMensagemChat({ role: "user", content: "Pode me dar uma dica sobre essa questão?" });
+            
+            const msgComContexto = `Estou respondendo a seguinte questão: "${q.pergunta}". As alternativas são: ${q.alternativas.join(", ")}. Por favor, me dê uma dica breve para me ajudar a chegar na resposta, mas NÃO me dê a resposta direta.`;
+            
+            enviarMsgServidor({ data: { historico: [], novaMensagem: msgComContexto } })
+              .then((resposta) => {
+                empurrarMensagemChat({ role: "assistant", content: resposta });
+              })
+              .catch(() => {
+                empurrarMensagemChat({ role: "assistant", content: q.dica || "Pense bem sobre os conceitos que vimos..." });
+              });
+          }}
+          className="mt-4 rounded-lg border border-amber/50 bg-amber/10 px-4 py-2 text-sm font-medium text-amber hover:bg-amber/20 outline-none focus-visible:ring-2 focus-visible:ring-amber disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          💡 Pedir dica
+          {pediuDica ? "💡 Dica enviada no chat" : "💡 Pedir dica"}
         </button>
-      )}
-      {mostrarDica && q.dica && (
-        <div className="mt-4 rounded-lg border border-amber/40 bg-amber/10 p-3 text-sm text-ink">
-          <span className="font-semibold text-amber">Dica:</span> {q.dica}
-        </div>
       )}
 
       {respondeu && (
-        <button onClick={onVoltar} className="mt-6 w-full rounded-lg bg-emerald px-4 py-3 font-semibold text-bg hover:bg-emerald-600">
-          Continuar
+        <button 
+          onClick={() => {
+            if (progressoFila + 1 >= filaIdx.length) {
+              onVoltar();
+            } else {
+              setProgressoFila(p => p + 1);
+              setTentativa(1);
+              setEscolha(null);
+              setFeedback(null);
+              setPediuDica(false);
+              setMostrarDica(false);
+              setFeedbackIA(null);
+              setLoadingIA(false);
+            }
+          }} 
+          className="mt-6 w-full rounded-lg bg-emerald px-4 py-3 font-semibold text-bg hover:bg-emerald-600 transition outline-none focus-visible:ring-2 focus-visible:ring-emerald"
+        >
+          {progressoFila + 1 >= filaIdx.length ? "Finalizar exercício" : "Próxima questão →"}
         </button>
       )}
     </div>

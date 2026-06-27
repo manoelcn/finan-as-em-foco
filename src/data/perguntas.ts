@@ -7,13 +7,83 @@ export interface Questao {
 }
 
 export const DIAGNOSTICO: Record<number, Questao> = {
-  1: { pergunta: "João quer comprar um tênis novo de R$300, mas já tem um par em bom estado. Esse gasto é:", alternativas: ["Uma necessidade básica", "Um desejo, pois o atual ainda atende à função", "Um investimento", "Uma despesa fixa"], correta: 1 },
-  2: { pergunta: "Maria recebe R$1.200/mês e gasta R$400 em aluguel, R$300 em alimentação e R$150 em transporte. Qual é o saldo disponível?", alternativas: ["R$250", "R$350", "R$450", "R$500"], correta: 1 },
-  3: { pergunta: "Um produto custa R$80 e está com 15% de desconto. Qual o valor a pagar?", alternativas: ["R$65", "R$68", "R$72", "R$75"], correta: 1 },
-  4: { pergunta: "Empréstimo de R$1.000 a 2% ao mês por 3 meses. Qual o valor dos juros?", alternativas: ["R$20", "R$40", "R$60", "R$80"], correta: 2 },
-  5: { pergunta: "R$500 aplicados a 10% ao mês por 2 meses com juros compostos. Qual o montante?", alternativas: ["R$595", "R$600", "R$605", "R$610"], correta: 2 },
-  6: { pergunta: "Ana gastou R$1.000 no crédito e pagou apenas R$200 da fatura. Sobre o que incidirão os juros rotativos?", alternativas: ["Sobre os R$200 pagos", "Sobre os R$800 restantes", "Sobre os R$1.000 totais", "Não há juros se pagar o mínimo"], correta: 1 },
-  7: { pergunta: "Pedro quer juntar R$1.200 em 6 meses. Quanto ele deve guardar por mês (sem juros)?", alternativas: ["R$150", "R$175", "R$200", "R$250"], correta: 2 },
+  1: { 
+    pergunta: "João quer comprar um tênis novo de R$300, mas já tem um par em bom estado. Esse gasto é:", 
+    alternativas: ["Uma necessidade básica", "Um desejo, pois o atual ainda atende à função", "Um investimento", "Uma despesa fixa"], 
+    correta: 1,
+    feedbacks: {
+      0: "Necessidade é algo indispensável para sobreviver. Como ele já tem um par bom, não é urgente.",
+      2: "Investimentos são aplicações que geram retorno financeiro no futuro.",
+      3: "Despesa fixa é aquela que se repete todo mês, como o aluguel."
+    },
+    dica: "Exato! Desejos são compras motivadas por vontade, não por urgência de sobrevivência."
+  },
+  2: { 
+    pergunta: "Maria recebe R$1.200/mês e gasta R$400 em aluguel, R$300 em alimentação e R$150 em transporte. Qual é o saldo disponível?", 
+    alternativas: ["R$250", "R$350", "R$450", "R$500"], 
+    correta: 1,
+    feedbacks: {
+      0: "Verifique a soma das despesas: 400 + 300 + 150 = 850. Agora subtraia de 1200.",
+      2: "Cuidado na subtração. As despesas somam R$850. Quanto sobra de 1200?",
+      3: "A soma das despesas é R$850, o que deixa um saldo menor que 500."
+    },
+    dica: "Perfeito! A soma das despesas é R$850, e R$1.200 - R$850 deixa exatamente R$350 de saldo."
+  },
+  3: { 
+    pergunta: "Um produto custa R$80 e está com 15% de desconto. Qual o valor a pagar?", 
+    alternativas: ["R$65", "R$68", "R$72", "R$75"], 
+    correta: 1,
+    feedbacks: {
+      0: "Isso seria um desconto maior que R$12. Calcule 15% de 80 e subtraia.",
+      2: "Esse desconto foi de apenas 10% (R$8). O desconto pedido é de 15%.",
+      3: "Esse desconto foi de apenas R$5. Para achar 15%, calcule 80 x 0,15."
+    },
+    dica: "Muito bem! 15% de 80 é R$12. Subtraindo R$12 de R$80, temos R$68."
+  },
+  4: { 
+    pergunta: "Empréstimo de R$1.000 a 2% ao mês por 3 meses. Qual o valor dos juros?", 
+    alternativas: ["R$20", "R$40", "R$60", "R$80"], 
+    correta: 2,
+    feedbacks: {
+      0: "Isso seria os juros de apenas 1 mês (2% de 1000). O prazo é de 3 meses.",
+      1: "Isso seria os juros para 2 meses. Lembre-se que o prazo é de 3 meses.",
+      3: "Isso seria os juros de 4 meses. A fórmula é J = C * i * t."
+    },
+    dica: "Correto! Juros = 1000 * 0.02 * 3 = 60 reais."
+  },
+  5: { 
+    pergunta: "R$500 aplicados a 10% ao mês por 2 meses com juros compostos. Qual o montante?", 
+    alternativas: ["R$595", "R$600", "R$605", "R$610"], 
+    correta: 2,
+    feedbacks: {
+      0: "O cálculo ficou um pouco abaixo do esperado. Calcule mês a mês: 10% sobre 500, depois 10% sobre o novo valor.",
+      1: "R$600 seria no regime de juros simples. Em juros compostos há 'juros sobre juros'.",
+      3: "O valor ficou um pouco acima do esperado. O cálculo é 500 * (1.10)^2."
+    },
+    dica: "Excelente! No 1º mês vai para R$550. No 2º mês, rende mais 10% de R$550 (R$55), totalizando R$605."
+  },
+  6: { 
+    pergunta: "Ana gastou R$1.000 no crédito e pagou apenas R$200 da fatura. Sobre o que incidirão os juros rotativos?", 
+    alternativas: ["Sobre os R$200 pagos", "Sobre os R$800 restantes", "Sobre os R$1.000 totais", "Não há juros se pagar o mínimo"], 
+    correta: 1,
+    feedbacks: {
+      0: "Os R$200 já foram quitados. Os juros incidem apenas sobre o que ficou em aberto.",
+      2: "O banco não cobra juros do valor que você já pagou, apenas da diferença que rolou para o mês que vem.",
+      3: "O rotativo cobra (e muitos) juros sobre o valor que não foi pago, mesmo pagando o mínimo."
+    },
+    dica: "Isso aí! O rotativo sempre é cobrado sobre a diferença que fica para o próximo mês (neste caso, R$800)."
+  },
+  7: { 
+    pergunta: "Pedro quer juntar R$1.200 em 6 meses. Quanto ele deve guardar por mês (sem juros)?", 
+    alternativas: ["R$150", "R$175", "R$200", "R$250"], 
+    correta: 2,
+    feedbacks: {
+      0: "Guardando R$150, em 6 meses ele terá apenas R$900.",
+      1: "Guardando R$175, em 6 meses ele terá R$1.050.",
+      3: "Guardando R$250, ele juntaria R$1.500, que é mais do que a meta."
+    },
+    dica: "Acertou! Basta dividir a meta pelo tempo: 1200 / 6 = 200 reais por mês."
+  },
 };
 
 export const EXERCICIOS: Record<number, Questao[]> = {

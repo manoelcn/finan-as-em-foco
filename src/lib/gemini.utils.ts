@@ -33,7 +33,6 @@ export function montarContexto(
     : "";
 
   return `[CONTEXTO DO ALUNO]
-Nome: ${alunoNome || "(sem nome)"}
 Módulo atual: ${ucAtual}
 Proficiências:
 ${proficiencias}${exercicio}
