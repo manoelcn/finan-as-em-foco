@@ -59,7 +59,7 @@ export function Exercise({ unidade, onVoltar }: { unidade: Unidade; onVoltar: ()
           montarContexto(alunoNome, unidadesAtualizadas, unidade.titulo, null) +
           `Acabei de dominar o módulo "${unidade.titulo}"!`;
 
-        enviarMsgServidor({ historico: [], novaMensagem: msgComContexto })
+        enviarMsgServidor({ data: { historico: [], novaMensagem: msgComContexto } })
           .then((resposta) => {
             empurrarMensagemChat({ role: "assistant", content: `🏆 ${resposta}` });
           })
@@ -90,7 +90,7 @@ export function Exercise({ unidade, onVoltar }: { unidade: Unidade; onVoltar: ()
         usouDica: pediuDica,
       }) + "Acabei de errar essa questão. Me ajuda a entender onde errei?";
 
-      enviarMsgServidor({ historico: [], novaMensagem: msgComContexto })
+      enviarMsgServidor({ data: { historico: [], novaMensagem: msgComContexto } })
         .then((resposta) => setFeedbackIA(resposta))
         .catch(() => setFeedbackIA("Não consegui buscar uma explicação agora. Continue tentando! 💪"))
         .finally(() => setLoadingIA(false));

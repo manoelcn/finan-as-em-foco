@@ -74,8 +74,10 @@ export function ChatWidget() {
 
       // 3. Call Gemini API with full conversation history
       const resposta = await enviarMsgServidor({
-        historico: geminiHistoryRef.current,
-        novaMensagem: msgComContexto,
+        data: {
+          historico: geminiHistoryRef.current,
+          novaMensagem: msgComContexto,
+        },
       });
 
       // 4. Show assistant response in UI
