@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useApp } from "@/context/AppContext";
 import { DomainGraph } from "@/components/DomainGraph";
 import { Exercise } from "@/components/Exercise";
+import { ChatWidget } from "@/components/ChatWidget";
 
 export const Route = createFileRoute("/trilha")({
   head: () => ({
@@ -27,42 +28,16 @@ function Trilha() {
   };
 
   return (
-    <main className="min-h-screen bg-bg px-4 py-8">
-      <div className="mx-auto max-w-6xl">
-        <header className="mb-6 flex items-end justify-between">
-          <div>
-            <h1 className="font-display text-3xl font-bold text-ink">Sua trilha</h1>
-            <p className="text-sm text-ink-mute">{alunoNome ? `Olá, ${alunoNome}!` : "Vamos aprender juntos."}</p>
-          </div>
-          <div className="hidden text-right md:block">
-            <div className="text-xs uppercase tracking-wider text-ink-mute">Progresso geral</div>
-            <div className="font-display text-2xl font-bold text-emerald">
-              {Math.round(unidades.reduce((s, u) => s + u.proficiencia, 0) / unidades.length)}%
-            </div>
-          </div>
-        </header>
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-[2fr_3fr]">
-          {/* Esquerda — grafo */}
-          <section className="rounded-2xl border border-border-soft bg-surface p-5">
-            <h2 className="font-display text-lg font-semibold text-ink">Mapa de Conhecimento</h2>
-            <p className="mt-1 text-xs text-ink-mute">Clique em um módulo desbloqueado para começar.</p>
-            <div className="mt-4">
-              <DomainGraph unidades={unidades} selecionada={selId} onSelecionar={selecionar} />
-            </div>
-            <div className="mt-3 flex flex-wrap gap-3 text-xs text-ink-mute">
-              <Legend color="#3B82F6" label="Disponível" />
-              <Legend color="#10B981" label="Dominado" />
-              <Legend color="#475569" label="Bloqueado" />
-            </div>
-          </section>
-
-          {/* Direita — conteúdo */}
-          <section className="rounded-2xl border border-border-soft bg-surface p-6">
+    <main className="h-[calc(100vh-56px)] bg-bg p-3 md:p-4">
+      <div className="flex h-full flex-col gap-4 md:flex-row">
+        
+        {/* Esquerda: Interação */}
+        <section className="flex w-full flex-col order-2 md:order-1 md:w-[55%] min-h-0">
+          <div className="flex h-full flex-col overflow-y-auto rounded-2xl border border-border-soft bg-surface p-6 shadow-sm md:p-8">
             {!sel && (
-              <div className="flex h-full min-h-[400px] flex-col items-center justify-center text-center text-ink-mute">
+              <div className="flex h-full flex-col items-center justify-center text-center text-ink-mute">
                 <div className="text-5xl">🗺️</div>
-                <p className="mt-3">Selecione um módulo no mapa para começar</p>
+                <p className="mt-3">Selecione um módulo no mapa ao lado para começar</p>
               </div>
             )}
 
@@ -92,19 +67,30 @@ function Trilha() {
             {sel && modo === "exercicio" && (
               <Exercise unidade={sel} onVoltar={() => setModo("conteudo")} />
             )}
-          </section>
-        </div>
+          </div>
+        </section>
+
+        {/* Direita: Grafo + Chat */}
+        <section className="flex w-full flex-col gap-4 order-1 md:order-2 md:w-[45%] min-h-0">
+          <div className="flex-none rounded-2xl border border-border-soft bg-surface p-[20px] shadow-sm">
+            <h2 className="font-display text-lg font-semibold text-ink">Mapa de Conhecimento</h2>
+            <div className="mt-2">
+              <DomainGraph unidades={unidades} selecionada={selId} onSelecionar={selecionar} />
+            </div>
+            <div className="mt-[12px] flex flex-wrap gap-4 text-[13px] text-ink-mute border-t border-border-soft pt-3 justify-center">
+              <span className="inline-flex items-center gap-2"><span className="h-[10px] w-[10px] rounded-full" style={{ background: "#3B82F6" }} />Disponível</span>
+              <span className="inline-flex items-center gap-2"><span className="h-[10px] w-[10px] rounded-full" style={{ background: "#10B981" }} />Dominado</span>
+              <span className="inline-flex items-center gap-2"><span className="h-[10px] w-[10px] rounded-full" style={{ background: "#475569" }} />Bloqueado</span>
+            </div>
+          </div>
+          
+          <div className="flex flex-1 flex-col min-h-0">
+             <ChatWidget />
+          </div>
+        </section>
+        
       </div>
     </main>
-  );
-}
-
-function Legend({ color, label }: { color: string; label: string }) {
-  return (
-    <span className="inline-flex items-center gap-2">
-      <span className="h-3 w-3 rounded-full" style={{ background: color }} />
-      {label}
-    </span>
   );
 }
 
@@ -126,7 +112,7 @@ function ProficiencyBar({ value }: { value: number }) {
         <span>Proficiência</span>
         <span style={{ color }}>{value}%</span>
       </div>
-      <div className="h-2 overflow-hidden rounded-full bg-bg">
+      <div className="h-2 overflow-hidden rounded-full bg-bg border border-border-soft">
         <div className="h-full transition-all" style={{ width: `${value}%`, background: color }} />
       </div>
     </div>
