@@ -370,12 +370,12 @@ export const enviarMensagemTutora = createServerFn({ method: "POST" })
 
     const genAI = new GoogleGenerativeAI(key);
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash",
       systemInstruction: SYSTEM_INSTRUCTION,
     });
 
     const chat = model.startChat({ history: data.historico });
     const result = await chat.sendMessage(data.novaMensagem);
-    
+
     return result.response.text();
   });
